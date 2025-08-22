@@ -17,7 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('home',views.home, name='home'),\
+    path('home', views.home, name='home'),
+    path('case-intake/', views.case_intake, name='case_intake'),
 ]
