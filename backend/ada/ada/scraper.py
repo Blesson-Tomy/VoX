@@ -29,7 +29,7 @@ class BillScraper:
                 status = article.find('span', class_='status-pending')
                 
                 # Only proceed if title exists and status is specifically "pending"
-                if title and status and status.text.strip().lower() == 'In Committee':
+                if title and status and status.text.strip() == 'In Committee':
                     title_text = title.text.strip()
                     
                     # Find summary content within the article

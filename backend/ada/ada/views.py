@@ -38,89 +38,51 @@ def home(request):
 def dashboard(request, bill_id):
      bill = get_object_or_404(Bill, id=bill_id)
      feedbacks = bill.feedbacks.all()
-     support_count = feedbacks.filter(sentiment="support").count()
-     oppose_count = feedbacks.filter(sentiment="oppose").count()
-     suggest_count = feedbacks.filter(sentiment="suggest").count()
-     return render(request, "dashboard.html", { "bill": bill, "support": support_count, "oppose": oppose_count, "suggest": suggest_count, "feedbacks": feedbacks })
+     support_count = feedbacks.filter(user_sentiment="support").count()
+     oppose_count = feedbacks.filter(user_sentiment="oppose").count()
+     suggest_count = feedbacks.filter(user_sentiment="suggest").count()
+     return render(request, "ada/dashboard.html", { "bill": bill, "support": support_count, "oppose": oppose_count, "suggest": suggest_count, "feedbacks": feedbacks })
+
 
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Bill, Feedback
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from nltk.sentiment import SentimentIntensityAnalyzer
 
+# ✅ Initialize once
 analyzer = SentimentIntensityAnalyzer()
-def bill_detail(request, pk):
-    bill = get_object_or_404(Bill, pk=pk)
-    feedbacks = bill.feedbacks.all().order_by("-submitted_at")  # newest first
-    feedbacks = bill.feedbacks.all().order_by("-submitted_at")  # newest first
+
+
+def bill_detail(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+    feedbacks = bill.feedbacks.all().order_by("-submitted_at")
 
     if request.method == "POST":
         comment = request.POST.get("comment")
-        user_sentiment = request.POST.get("user_sentiment")  # <- get from form
+        user_sentiment = request.POST.get("user_sentiment")
 
         if comment:
+            sentiment_score = analyzer.polarity_scores(comment)["compound"]
+            if sentiment_score >= 0.05:
+                ai_sentiment = "support"
+            elif sentiment_score <= -0.05:
+                ai_sentiment = "oppose"
+            else:
+                ai_sentiment = "neutral"
+
             feedback = Feedback(
                 bill=bill,
+                user=request.user,  # links feedback to logged-in user
                 comment=comment,
-                user_sentiment=user_sentiment if user_sentiment else None
+                user_sentiment=user_sentiment,
+                ai_sentiment=ai_sentiment,
+                ai_confidence=abs(sentiment_score)
             )
-
-            # Run sentiment analysis
-            sentiment_score = analyzer.polarity_scores(comment)["compound"]
-
-            if sentiment_score >= 0.05:
-                feedback.ai_sentiment = "support"
-            elif sentiment_score <= -0.05:
-                feedback.ai_sentiment = "oppose"
-            else:
-                feedback.ai_sentiment = "neutral"
-
-            # Save AI confidence score
-            feedback.ai_confidence = abs(sentiment_score)
-
             feedback.save()
-            return redirect("ada/bill_detail", pk=bill.pk)
-        comment = request.POST.get("comment")
-        user_sentiment = request.POST.get("user_sentiment")  # <- get from form
-
-        if comment:
-            feedback = Feedback(
-                bill=bill,
-                comment=comment,
-                user_sentiment=user_sentiment if user_sentiment else None
-            )
-
-            # Run sentiment analysis
-            sentiment_score = analyzer.polarity_scores(comment)["compound"]
-
-            if sentiment_score >= 0.05:
-                feedback.ai_sentiment = "support"
-            elif sentiment_score <= -0.05:
-                feedback.ai_sentiment = "oppose"
-            else:
-                feedback.ai_sentiment = "neutral"
-
-            # Save AI confidence score
-            feedback.ai_confidence = abs(sentiment_score)
-
-            feedback.save()
-            return redirect("ada/bill_detail", pk=bill.pk)
+            return redirect("bill_detail", bill_id=bill.pk)
 
     return render(request, "ada/bill_detail.html", {
         "bill": bill,
-        "feedbacks": feedbacks,
+        "feedbacks": feedbacks
     })
 
-def login_view(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-    else:
-        form = AuthenticationForm()
-    return render(request, 'registration/login.html', {'form': form})

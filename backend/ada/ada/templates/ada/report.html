@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Public Consultation Report - {{ bill.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <h1 class="mb-4">Public Consultation Report: {{ bill.title }}</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card p-3 text-center shadow-sm">
+                <h6>Total Voters</h6>
+                <h3>{{ report.total_votes }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 text-center shadow-sm bg-success bg-opacity-10">
+                <h6>Support</h6>
+                <h3>{{ report.support_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 text-center shadow-sm bg-danger bg-opacity-10">
+                <h6>Oppose</h6>
+                <h3>{{ report.oppose_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 text-center shadow-sm bg-warning bg-opacity-10">
+                <h6>Neutral</h6>
+                <h3>{{ report.neutral_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h3>Why people support</h3>
+    <p><strong>Common points:</strong> {{ report.support_keywords|join:", " }}</p>
+    <ul>
+        {% for comment in report.support_comments %}
+            <li>{{ comment }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Why people oppose</h3>
+    <p><strong>Common points:</strong> {{ report.oppose_keywords|join:", " }}</p>
+    <ul>
+        {% for comment in report.oppose_comments %}
+            <li>{{ comment }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Neutral / Suggestions</h3>
+    <p><strong>Common points:</strong> {{ report.neutral_keywords|join:", " }}</p>
+    <ul>
+        {% for comment in report.neutral_comments %}
+            <li>{{ comment }}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="mt-4">
+        <a href="{% url 'bill_detail' bill.id %}" class="btn btn-primary">Back to Bill</a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back to Bills</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,135 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ bill.title }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .feedback-card {
-            border-left: 4px solid;
-            margin-bottom: 1rem;
-        }
+        .feedback-card { border-left: 4px solid; margin-bottom: 1rem; border-radius: .5rem; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
         .feedback-support { border-color: #198754; }
         .feedback-oppose { border-color: #dc3545; }
         .feedback-neutral { border-color: #ffc107; }
-        .sentiment-badge {
-            font-size: 0.8rem;
-            padding: 0.3rem 0.6rem;
-        }
+        .sentiment-badge { font-size: .8rem; padding: .3rem .6rem; }
+        .summary-card { text-align: center; padding: 1rem; border-radius: .75rem; margin-bottom: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
+        .report-card { margin-top: 2rem; }
+        .btn-pill { border-radius: 9999px; }
+        .form-help { font-size: .9rem; color: #6c757d; }
     </style>
 </head>
 <body class="bg-light">
-    <div class="container py-5">
-        <!-- Bill Details -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h1 class="card-title h2">{{ bill.title }}</h1>
-                <p class="card-text lead">{{ bill.summary }}</p>
-                <div class="text-muted small">
-                    Created: {{ bill.created_at|date:"F j, Y" }}
-                </div>
-            </div>
-        </div>
+<div class="container py-5">
 
-        <!-- Feedback Form -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header">
-                        <h2 class="h5 mb-0">Submit Your Feedback</h2>
-                    </div>
-                    <div class="card-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label class="form-label">Your Position</label>
-                                <div class="d-flex gap-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="user_sentiment" value="support" id="support" required>
-                                        <label class="form-check-label" for="support">
-                                            <span class="badge bg-success">Support</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="user_sentiment" value="oppose" id="oppose">
-                                        <label class="form-check-label" for="oppose">
-                                            <span class="badge bg-danger">Oppose</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="user_sentiment" value="neutral" id="neutral">
-                                        <label class="form-check-label" for="neutral">
-                                            <span class="badge bg-warning">Neutral</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="comment" class="form-label">Your Comment</label>
-                                <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Submit Feedback</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Feedback List -->
-            <div class="col-md-6">
-                <div class="card shadow-sm">
-                    <div class="card-header">
-                        <h2 class="h5 mb-0">Community Feedback</h2>
-                    </div>
-                    <div class="card-body">
-                        {% if feedbacks %}
-                            {% for feedback in feedbacks %}
-                                <div class="feedback-card p-3 bg-white feedback-{{ feedback.user_sentiment }}">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <span class="badge bg-{% if feedback.user_sentiment == 'support' %}success{% elif feedback.user_sentiment == 'oppose' %}danger{% else %}warning{% endif %} sentiment-badge">
-                                                User: {{ feedback.user_sentiment|title }}
-                                            </span>
-                                            <span class="badge bg-{% if feedback.ai_sentiment == 'support' %}success{% elif feedback.ai_sentiment == 'oppose' %}danger{% else %}warning{% endif %} sentiment-badge ms-1">
-                                                AI: {{ feedback.ai_sentiment|title }}
-                                            </span>
-                                        </div>
-                                        <small class="text-muted">{{ feedback.submitted_at|date:"M j, g:i A" }}</small>
-                                    </div>
-                                    <p class="mb-0">{{ feedback.comment }}</p>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted">No feedback yet. Be the first to comment!</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="mt-4">
-            <a href="{% url 'home' %}" class="btn btn-outline-secondary">← Back to Bills</a>
-            <a href="{% url 'dashboard' bill.id %}" class="btn btn-primary ms-2">View Analytics</a>
+    <!-- Bill Details -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h1 class="card-title h2 mb-2">{{ bill.title }}</h1>
+            <p class="card-text lead mb-3">{{ bill.summary }}</p>
+            <div class="text-muted small">Created: {{ bill.created_at|date:"F j, Y" }}</div>
         </div>
     </div>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="toast-header">
-                        <strong class="me-auto">Notification</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        {{ message }}
-                    </div>
+    <div class="row g-4">
+        <!-- Feedback Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Submit Your Feedback</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Radio buttons styled as buttons -->
+                        <div class="mb-3">
+                            <label class="form-label mb-2">Your Position</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <input type="radio" class="btn-check" name="user_sentiment" id="pos-support" value="support" required>
+                                <label class="btn btn-outline-success btn-pill" for="pos-support">Support</label>
+
+                                <input type="radio" class="btn-check" name="user_sentiment" id="pos-oppose" value="oppose">
+                                <label class="btn btn-outline-danger btn-pill" for="pos-oppose">Oppose</label>
+
+                                <input type="radio" class="btn-check" name="user_sentiment" id="pos-neutral" value="neutral">
+                                <label class="btn btn-outline-warning btn-pill" for="pos-neutral">Neutral</label>
+                            </div>
+                            <div class="form-help mt-2">Choose the option that best reflects your stance.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Your Comment</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Write your opinion or suggestion..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                    </form>
                 </div>
             </div>
-        {% endfor %}
-    {% endif %}
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Community Feedback -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">Community Feedback</h2>
+                </div>
+                <div class="card-body">
+                    {% if feedbacks %}
+                        {% for feedback in feedbacks %}
+                            <div class="feedback-card p-3 bg-white feedback-{{ feedback.ai_sentiment }}">
+                                <p class="mb-1">
+                                    <strong>{{ feedback.user.username }}</strong>
+                                    <span class="text-muted">· {{ feedback.submitted_at|date:"M d, Y H:i" }}</span>
+                                </p>
+                                <p class="mb-1">{{ feedback.comment }}</p>
+                                <small class="text-muted">
+                                    User Sentiment: {{ feedback.user_sentiment }} |
+                                    AI Sentiment: {{ feedback.ai_sentiment }} ({{ feedback.ai_confidence|floatformat:2 }})
+                                </small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No feedback yet. Be the first to comment!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Public Consultation Summary -->
+    <div class="report-card">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h5 mb-0">Public Consultation Summary</h2>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="summary-card bg-light">Total Votes<br><strong>{{ feedbacks.count }}</strong></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="summary-card bg-success bg-opacity-10">Support<br><strong>{{ support_count }}</strong></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="summary-card bg-danger bg-opacity-10">Oppose<br><strong>{{ oppose_count }}</strong></div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="summary-card bg-warning bg-opacity-10">Neutral<br><strong>{{ neutral_count }}</strong></div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <h5 class="mb-2">Reasons for Support</h5>
+                        <ul class="mb-0">
+                            {% for comment in support_comments %}
+                                <li>{{ comment }}</li>
+                            {% empty %}
+                                <li class="text-muted">No supportive reasons yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="mb-2">Reasons for Opposition</h5>
+                        <ul class="mb-0">
+                            {% for comment in oppose_comments %}
+                                <li>{{ comment }}</li>
+                            {% empty %}
+                                <li class="text-muted">No opposing reasons yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="mb-2">Neutral / Suggestions</h5>
+                        <ul class="mb-0">
+                            {% for comment in neutral_comments %}
+                                <li>{{ comment }}</li>
+                            {% empty %}
+                                <li class="text-muted">No neutral comments yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Back -->
+    <div class="mt-4">
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">← Back to Bills</a>
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

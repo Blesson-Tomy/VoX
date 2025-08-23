@@ -1,4 +1,7 @@
+from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
+
 
 class Bill(models.Model):
     title = models.CharField(max_length=255)
@@ -21,6 +24,7 @@ class Feedback(models.Model):
     ]
 
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name="feedbacks")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # ✅ portable
     
     # User’s selected sentiment (optional, can be blank if AI decides)
     user_sentiment = models.CharField(
