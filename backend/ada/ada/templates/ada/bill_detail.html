@@ -25,101 +25,72 @@
         <div class="card-body">
             <h1 class="card-title h2 mb-2">{{ bill.title }}</h1>
             <p class="card-text lead mb-3">{{ bill.summary }}</p>
-            <div class="text-muted small">Created: {{ bill.created_at|date:"F j, Y" }}</div>
+            <div class="text-muted small">Published In: {{ bill.created_at }}</div>
         </div>
     </div>
 
     <div class="row g-4">
-        <!-- Feedback Form -->
+        <!-- Left Column: Feedback Form -->
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h2 class="h5 mb-0">Submit Your Feedback</h2>
                 </div>
                 <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
+                    {% if user.is_authenticated %}
+                        {% if has_voted %}
+                            <p><strong>Thank you, you have already submitted feedback for this bill.</strong></p>
+                        {% else %}
+                            <!-- The Form for users who haven't voted -->
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label mb-2">Your Position</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <input type="radio" class="btn-check" name="user_sentiment" id="pos-support" value="support" required>
+                                        <label class="btn btn-outline-success btn-pill" for="pos-support">Support</label>
 
-                        <!-- Radio buttons styled as buttons -->
-                        <div class="mb-3">
-                            <label class="form-label mb-2">Your Position</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                <input type="radio" class="btn-check" name="user_sentiment" id="pos-support" value="support" required>
-                                <label class="btn btn-outline-success btn-pill" for="pos-support">Support</label>
+                                        <input type="radio" class="btn-check" name="user_sentiment" id="pos-oppose" value="oppose">
+                                        <label class="btn btn-outline-danger btn-pill" for="pos-oppose">Oppose</label>
 
-                                <input type="radio" class="btn-check" name="user_sentiment" id="pos-oppose" value="oppose">
-                                <label class="btn btn-outline-danger btn-pill" for="pos-oppose">Oppose</label>
-
-                                <input type="radio" class="btn-check" name="user_sentiment" id="pos-neutral" value="neutral">
-                                <label class="btn btn-outline-warning btn-pill" for="pos-neutral">Neutral</label>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header">
-                        <h2 class="h5 mb-0">Submit Your Feedback</h2>
-                    </div>
-                    <div class="card-body">
-                      {% if user.is_authenticated %}
-    {% if has_voted %}
-        <p><strong>Thank you, you have already voted on this bill.</strong></p>
-    {% else %}
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <label class="form-label">Your Position</label>
-                                <div class="d-flex gap-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="user_sentiment" value="support" id="support" required>
-                                        <label class="form-check-label" for="support">
-                                            <span class="badge bg-success">Support</span>
-                                        </label>
+                                        <input type="radio" class="btn-check" name="user_sentiment" id="pos-neutral" value="neutral">
+                                        <label class="btn btn-outline-warning btn-pill" for="pos-neutral">Neutral</label>
                                     </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="user_sentiment" value="oppose" id="oppose">
-                                        <label class="form-check-label" for="oppose">
-                                            <span class="badge bg-danger">Oppose</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="user_sentiment" value="neutral" id="neutral">
-                                        <label class="form-check-label" for="neutral">
-                                            <span class="badge bg-warning">Neutral</span>
-                                        </label>
-                                    </div>
+                                    <div class="form-help mt-2">Choose the option that best reflects your stance.</div>
                                 </div>
-                            </div>
-                            <div class="form-help mt-2">Choose the option that best reflects your stance.</div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label for="comment" class="form-label">Your Comment</label>
-                            <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Write your opinion or suggestion..." required></textarea>
-                        </div>
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">Your Comment</label>
+                                    <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Write your opinion or suggestion..." required></textarea>
+                                </div>
 
-                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
-                    </form>
+                                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <p>Please <a href="{% url 'login' %}">log in</a> or <a href="{% url 'register' %}">register</a> to submit your feedback.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Community Feedback -->
+        <!-- Right Column: Community Feedback -->
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header">
                     <h2 class="h5 mb-0">Community Feedback</h2>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
                     {% if feedbacks %}
                         {% for feedback in feedbacks %}
-                            <div class="feedback-card p-3 bg-white feedback-{{ feedback.ai_sentiment }}">
+                            <div class="feedback-card p-3 bg-white feedback-{{ feedback.user_sentiment|default:feedback.ai_sentiment }}">
                                 <p class="mb-1">
                                     <strong>{{ feedback.user.username }}</strong>
                                     <span class="text-muted">· {{ feedback.submitted_at|date:"M d, Y H:i" }}</span>
                                 </p>
                                 <p class="mb-1">{{ feedback.comment }}</p>
                                 <small class="text-muted">
-                                    User Sentiment: {{ feedback.user_sentiment }} |
-                                    AI Sentiment: {{ feedback.ai_sentiment }} ({{ feedback.ai_confidence|floatformat:2 }})
+                                    Sentiment: <strong>{{ feedback.user_sentiment }}</strong>
                                 </small>
                             </div>
                         {% endfor %}
@@ -185,7 +156,6 @@
                         </ul>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
