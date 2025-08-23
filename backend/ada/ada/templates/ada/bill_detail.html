@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ bill.title }}</title>
+</head>
+<body>
+    <h1>{{ bill.title }}</h1>
+    <p>{{ bill.summary }}</p>
+
+    <h2>Submit Your Feedback</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label>
+            <input type="radio" name="sentiment" value="support" required> Support
+        </label><br>
+        <label>
+            <input type="radio" name="sentiment" value="oppose" required> Oppose
+        </label><br>
+        <label>
+            <input type="radio" name="sentiment" value="suggest" required> Suggestion
+        </label><br>
+        <textarea name="comment" placeholder="Your comment"></textarea><br><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    <hr>
+    <h2>Existing Feedback</h2>
+    <ul>
+        {% for fb in feedbacks %}
+            <li><b>{{ fb.sentiment|title }}</b> - {{ fb.comment }}</li>
+        {% empty %}
+            <p>No feedback yet.</p>
+        {% endfor %}
+    </ul>
+
+    <p>
+        <a href="{% url 'dashboard' bill.id %}">View Dashboard</a> |
+        <a href="{% url 'home' %}">Back to Bills</a>
+    </p>
+</body>
+</html>

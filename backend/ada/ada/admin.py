@@ -1,4 +1,8 @@
 from django.contrib import admin
-from .models import CaseIntake
+from .models import Bill, Feedback
 
-admin.site.register(CaseIntake)
+#admin.site.register(Bill)
+#admin.site.register(Feedback)
+
+# In Django shell
+

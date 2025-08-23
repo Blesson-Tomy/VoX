@@ -1,29 +1,43 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib import messages
-from django import forms
-from .models import CaseIntake
-from . import views
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Bill, Feedback
 
-class CaseIntakeForm(forms.ModelForm):
-    class Meta:
-        model = CaseIntake
-        fields = ['case_type', 'complainant_name', 'contact_number', 
-                 'email', 'description', 'supporting_documents']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
-        }
 
+# Homepage → list bills
 def home(request):
-    return render(request, 'home.html')
+    bills = Bill.objects.all()
+    return render(request, "home.html", {"bills": bills})
 
-def case_intake(request):
-    if request.method == 'POST':
-        form = CaseIntakeForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Case submitted successfully!')
-            return redirect('case_intake')
-    else:
-        form = CaseIntakeForm()
-    return render(request, 'ada/case_intake.html', {'form': form})
+# Bill detail → show bill + feedback form
+def bill_detail(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+    message = ""
+
+    if request.method == "POST":
+        sentiment = request.POST.get("sentiment")
+        comment = request.POST.get("comment", "")
+        Feedback.objects.create(bill=bill, sentiment=sentiment, comment=comment)
+        message = "Feedback submitted successfully!"
+
+    feedbacks = bill.feedbacks.all()
+    return render(request, "bill_detail.html", {
+        "bill": bill,
+        "feedbacks": feedbacks,
+        "message": message
+    })
+
+# Dashboard → show charts
+def dashboard(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+    feedbacks = bill.feedbacks.all()
+
+    support_count = feedbacks.filter(sentiment="support").count()
+    oppose_count = feedbacks.filter(sentiment="oppose").count()
+    suggest_count = feedbacks.filter(sentiment="suggest").count()
+
+    return render(request, "dashboard.html", {
+        "bill": bill,
+        "support": support_count,
+        "oppose": oppose_count,
+        "suggest": suggest_count,
+        "feedbacks": feedbacks
+    })
