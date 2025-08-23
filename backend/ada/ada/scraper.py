@@ -14,33 +14,47 @@ class BillScraper:
             response = requests.get(self.url, headers=self.headers)
             response.raise_for_status()
             
-            print(f"Scraping URL: {self.url}")  # Debug print
-            print(f"Response status: {response.status_code}")  # Debug print
-            
+            print(f"Scraping URL: {self.url}")
             soup = BeautifulSoup(response.text, 'html.parser')
-            article_titles = soup.find_all('h3', class_='cate')
             
-            print(f"Found {len(article_titles)} articles with h2.cate")  # Debug print
-            
-            
-            if not article_titles:
-                # If no articles found, print the HTML to debug
-                print("HTML content:", soup.prettify()[:500])  # Print first 500 chars
-            
+            # Find all articles within views-row class
+            articles = soup.find_all('div', class_='views-row')
             bills_data = []
             
-            for title in article_titles:
-                # Get the parent article link if it exists
-                article_link = title.find_parent('a')
-                article_url = f"https://prsindia.org{article_link['href']}" if article_link else None
-                
-                bill_data = {
-                    'title': title.text.strip(),
-                    'summary': self.get_article_details(article_url) if article_url else "Details not available"
-                }
-                bills_data.append(bill_data)
-                print(f"Scraped: {bill_data['title']}")
+            print(f"Found {len(articles)} total articles")
             
+            for article in articles:
+                # Find title and status within this specific article
+                title = article.find('h3', class_='cate')
+                status = article.find('span', class_='status-pending')
+                
+                # Only proceed if title exists and status is specifically "pending"
+                if title and status and status.text.strip().lower() == 'In Committee':
+                    title_text = title.text.strip()
+                    
+                    # Find summary content within the article
+                    summary_div = article.find('div', class_='field-content')
+                    summary_text = summary_div.text.strip() if summary_div else "No summary available"
+                    
+                    # Get article URL if available
+                    article_link = title.find_parent('a')
+                    article_url = f"https://prsindia.org{article_link['href']}" if article_link else None
+                    
+                    bill_data = {
+                        'title': title_text,
+                        'summary': summary_text,  # Added summary
+                        'status': 'pending',
+                        'url': article_url,
+                        'scraped_at': datetime.now()
+                    }
+                    
+                    bills_data.append(bill_data)
+                    print(f"Added pending bill: {title_text}")
+                else:
+                    skip_reason = "Missing title" if not title else "Not pending"
+                    
+        
+            print(f"Successfully scraped {len(bills_data)} pending bills")
             return bills_data
                     
         except Exception as e:
