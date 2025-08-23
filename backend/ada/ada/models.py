@@ -24,7 +24,7 @@ class Feedback(models.Model):
     
     # User’s selected sentiment (optional, can be blank if AI decides)
     user_sentiment = models.CharField(
-        max_length=10, choices=SENTIMENT_CHOICES, blank=True, null=True
+        max_length=10, choices=SENTIMENT_CHOICES, blank=True, #null=True
     )
     
     # AI-generated sentiment

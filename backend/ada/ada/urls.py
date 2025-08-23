@@ -19,7 +19,7 @@ from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("bill/<int:bill_id>/", views.bill_detail, name="bill_detail"),
-    path("bill/<int:bill_id>/dashboard/", views.dashboard, name="dashboard"),
+    path("ada/<int:pk>/", views.bill_detail, name="bill_detail"),
+    path("ada/<int:bill_id>/dashboard/", views.dashboard, name="dashboard"),
 ]
 

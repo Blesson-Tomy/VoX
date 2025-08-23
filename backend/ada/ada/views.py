@@ -38,38 +38,46 @@ def dashboard(request, bill_id):
      suggest_count = feedbacks.filter(sentiment="suggest").count()
      return render(request, "dashboard.html", { "bill": bill, "support": support_count, "oppose": oppose_count, "suggest": suggest_count, "feedbacks": feedbacks })
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Bill, Feedback
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+analyzer = SentimentIntensityAnalyzer()
+
 def bill_detail(request, pk):
     bill = get_object_or_404(Bill, pk=pk)
+    feedbacks = bill.feedbacks.all().order_by("-submitted_at")  # newest first
 
     if request.method == "POST":
-        sentiment_choice = request.POST.get("sentiment")
-        comment_text = request.POST.get("comment")
+        comment = request.POST.get("comment")
+        user_sentiment = request.POST.get("user_sentiment")  # <- get from form
 
-        # Run AI Sentiment Analysis
-        ai_result = sia.polarity_scores(comment_text)
-        compound = ai_result["compound"]
+        if comment:
+            feedback = Feedback(
+                bill=bill,
+                comment=comment,
+                user_sentiment=user_sentiment if user_sentiment else None
+            )
 
-        # Decide AI sentiment label
-        if compound >= 0.05:
-            ai_sentiment = "positive"
-        elif compound <= -0.05:
-            ai_sentiment = "negative"
-        else:
-            ai_sentiment = "neutral"
+            # Run sentiment analysis
+            sentiment_score = analyzer.polarity_scores(comment)["compound"]
 
-        ai_confidence = abs(compound)  # confidence = intensity of sentiment
+            if sentiment_score >= 0.05:
+                feedback.ai_sentiment = "support"
+            elif sentiment_score <= -0.05:
+                feedback.ai_sentiment = "oppose"
+            else:
+                feedback.ai_sentiment = "neutral"
 
-        # Save Feedback with AI fields
-        Feedback.objects.create(
-            bill=bill,
-            sentiment=sentiment_choice,
-            comment=comment_text,
-            ai_sentiment=ai_sentiment,
-            ai_confidence=ai_confidence,
-            submitted_at=timezone.now()
-        )
+            # Save AI confidence score
+            feedback.ai_confidence = abs(sentiment_score)
 
-        return redirect("bill_detail", pk=bill.pk)
+            feedback.save()
+            return redirect("ada/bill_detail", pk=bill.pk)
 
-    feedbacks = bill.feedbacks.all()
-    return render(request, "bill_detail.html", {"bill": bill, "feedbacks": feedbacks})
+    return render(request, "ada/bill_detail.html", {
+        "bill": bill,
+        "feedbacks": feedbacks,
+    })
+
+
