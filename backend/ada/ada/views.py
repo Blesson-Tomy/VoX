@@ -1,16 +1,34 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Bill, Feedback
 from django.utils import timezone
-
-# Import VADER
+from django.contrib import messages
+from .scraper import BillScraper
+from datetime import datetime
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 sia = SentimentIntensityAnalyzer()
 
 
 # Homepage → list bills 
-def home(request): 
-    bills = Bill.objects.all() 
-    return render(request, "home.html", {"bills": bills})
+def home(request):
+    scraper = BillScraper()
+    articles_data = scraper.scrape_bills()
+    
+    print(f"Found {len(articles_data)} articles")  
+    
+    # Update or create articles as bills
+    for article in articles_data:
+        print(f"Processing article: {article['title']}")  
+        Bill.objects.update_or_create(
+            title=article['title'],
+            defaults={
+                'summary': article['summary'],
+                'created_at': datetime.now()
+            }
+        )
+    
+    bills = Bill.objects.all().order_by('-created_at')
+    print(f"Total bills in database: {bills.count()}")  
+    return render(request, 'ada/home.html', {'bills': bills, 'scraped_count': len(articles_data)})
 
 def dashboard(request, bill_id):
      bill = get_object_or_404(Bill, id=bill_id)
