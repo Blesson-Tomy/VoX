@@ -52,6 +52,41 @@
 
                                 <input type="radio" class="btn-check" name="user_sentiment" id="pos-neutral" value="neutral">
                                 <label class="btn btn-outline-warning btn-pill" for="pos-neutral">Neutral</label>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h2 class="h5 mb-0">Submit Your Feedback</h2>
+                    </div>
+                    <div class="card-body">
+                      {% if user.is_authenticated %}
+    {% if has_voted %}
+        <p><strong>Thank you, you have already voted on this bill.</strong></p>
+    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Your Position</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="user_sentiment" value="support" id="support" required>
+                                        <label class="form-check-label" for="support">
+                                            <span class="badge bg-success">Support</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="user_sentiment" value="oppose" id="oppose">
+                                        <label class="form-check-label" for="oppose">
+                                            <span class="badge bg-danger">Oppose</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="user_sentiment" value="neutral" id="neutral">
+                                        <label class="form-check-label" for="neutral">
+                                            <span class="badge bg-warning">Neutral</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-help mt-2">Choose the option that best reflects your stance.</div>
                         </div>

@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+import re
 
 class BillScraper:
     def __init__(self):
@@ -45,13 +46,14 @@ class BillScraper:
                         'summary': summary_text,  # Added summary
                         'status': 'pending',
                         'url': article_url,
-                        'scraped_at': datetime.now()
+                        'scraped_at': ''.join(re.findall(r'\d', title_text))
                     }
                     
                     bills_data.append(bill_data)
                     print(f"Added pending bill: {title_text}")
                 else:
                     skip_reason = "Missing title" if not title else "Not pending"
+                    print(skip_reason)
                     
         
             print(f"Successfully scraped {len(bills_data)} pending bills")

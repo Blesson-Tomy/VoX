@@ -26,6 +26,7 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # path("ada/<int:bill_id>/report/", views.generate_report, name="generate_report"),
+    path('register/', views.register, name='register'),
 ]
 
 

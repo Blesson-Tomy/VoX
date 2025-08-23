@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class Bill(models.Model):
     title = models.CharField(max_length=255)
     summary = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.IntegerField(blank=True, null=True)
 
     class Meta:
         db_table = 'ada_bill'
@@ -24,7 +24,7 @@ class Feedback(models.Model):
     ]
 
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name="feedbacks")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # ✅ portable
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feedbacks")
     
     # User’s selected sentiment (optional, can be blank if AI decides)
     user_sentiment = models.CharField(
@@ -35,6 +35,10 @@ class Feedback(models.Model):
     ai_sentiment = models.CharField(
         max_length=10, choices=SENTIMENT_CHOICES, blank=True, null=True
     )
+    
+    constraints = [
+            models.UniqueConstraint(fields=['user', 'bill'], name='unique_feedback_user_bill')
+        ]
 
     # Confidence score from AI model (0–1)
     ai_confidence = models.FloatField(blank=True, null=True)
