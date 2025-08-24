@@ -39,7 +39,7 @@
                         <div class="card bill-card shadow-sm h-100">
                             <div class="card-body">
                                 <h5 class="card-title">{{ bill.title }}</h5>
-                                <p class="card-text bill-summary text-muted">{{ bill.summary }}</p>
+                                <p class="card-text bill-summary text-muted">{{ bill.url }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     
                                     <a href="{% url 'bill_detail' bill.id %}" class="btn btn-outline-primary btn-sm">View Details</a>

@@ -46,6 +46,7 @@ def home(request):
             title=title,
             defaults={
                 'summary': article['summary'],
+                'url': article['url'],
                 'created_at': year, # Use the extracted year
             }
         )
