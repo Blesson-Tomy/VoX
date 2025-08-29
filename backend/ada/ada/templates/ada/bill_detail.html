@@ -4,7 +4,7 @@
 
 {% block extra_styles %}
 <style>
-    /* Page-specific styles go here */
+    
     .feedback-card { border-left: 4px solid; margin-bottom: 1rem; border-radius: .5rem; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
     .feedback-support { border-color: #198754; }
     .feedback-oppose { border-color: #dc3545; }
@@ -17,17 +17,17 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Bill Details -->
+    
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h1 class="card-title h2 mb-2">{{ bill.title }}</h1>
-            <p class="card-text lead mb-3">{{ bill.summary }}</p>
-            <div class="text-muted small">Published In: {{ bill.publication_year }}</div>
+            <p class="card-text lead mb-3"></p>
+            <div class="text-muted small"></div>
         </div>
     </div>
 
     <div class="row g-4">
-        <!-- Left Column: Feedback Form -->
+       
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header">
@@ -38,7 +38,7 @@
                         {% if has_voted %}
                             <p><strong>Thank you, you have already submitted feedback for this bill.</strong></p>
                         {% else %}
-                            <!-- The Form for users who haven't voted -->
+                           
                             <form method="post">
                                 {% csrf_token %}
                                 <div class="mb-3">
@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        <!-- Right Column: Community Feedback -->
+
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header">
@@ -87,7 +87,12 @@
                                 </p>
                                 <p class="mb-1">{{ feedback.comment }}</p>
                                 <small class="text-muted">
-                                    Sentiment: <strong>{{ feedback.user_sentiment }}</strong>
+                                    Sentiment: <strong>{{ feedback.user_sentiment }}  &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;    </strong>
+                                    
+                                </small>
+                                
+                                 <small class="text-muted">
+                                    AI Sentiment: <strong>{{ feedback.ai_sentiment }}</strong>
                                 </small>
                             </div>
                         {% endfor %}
@@ -99,7 +104,7 @@
         </div>
     </div>
 
-    <!-- Public Consultation Summary -->
+ 
     <div class="report-card">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
@@ -157,7 +162,7 @@
         </div>
     </div>
 
-    <!-- Back -->
+   
     <div class="mt-4">
         <a href="{% url 'home' %}" class="btn btn-outline-secondary">← Back to Bills</a>
     </div>

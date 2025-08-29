@@ -1,28 +1,25 @@
-# ada/views.py
 
-# Python Standard Library Imports
 from datetime import datetime
 import re
 
-# Django Core Imports
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
-# Third-Party Imports
+
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-# Local Application Imports
 from .models import Bill, Feedback
 from .scraper import BillScraper
 
-# Initialize the sentiment analyzer once
+
 analyzer = SentimentIntensityAnalyzer()
 
 
-@login_required
+#@login_required
 def home(request):
     """
     Scrapes for new bills, updates the database, and displays a list of all bills.
@@ -33,7 +30,7 @@ def home(request):
     print(f"Found {len(articles_data)} articles")  
     
     for article in articles_data:
-        # Extract the year from the title
+        
         year = None
         title = article['title']
         match = re.search(r'\b\d{4}\b', title)
@@ -47,11 +44,11 @@ def home(request):
             defaults={
                 'summary': article['summary'],
                 'url': article['url'],
-                'created_at': year, # Use the extracted year
+                'created_at': year, 
             }
         )
     
-    # Order by newest year first, then alphabetically by title
+
     bills = Bill.objects.all().order_by('created_at', 'title')
     
     print(f"Total bills in database: {bills.count()}")  
@@ -65,7 +62,7 @@ def dashboard(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
     feedbacks = bill.feedbacks.all()
     
-    # Count feedback based on the user's chosen sentiment
+
     support_count = feedbacks.filter(user_sentiment="support").count()
     oppose_count = feedbacks.filter(user_sentiment="oppose").count()
     suggest_count = feedbacks.filter(user_sentiment="suggest").count()
@@ -116,17 +113,17 @@ def bill_detail(request, bill_id):
             messages.success(request, "Your feedback has been submitted successfully!")
             return redirect("bill_detail", bill_id=bill.id)
 
-    # Count per sentiment
+
     support_count = feedbacks.filter(user_sentiment="support").count()
     oppose_count = feedbacks.filter(user_sentiment="oppose").count()
     neutral_count = feedbacks.filter(user_sentiment="neutral").count()
 
-    # Extract comments
+
     support_comments = feedbacks.filter(user_sentiment="support").values_list("comment", flat=True)[:5]
     oppose_comments = feedbacks.filter(user_sentiment="oppose").values_list("comment", flat=True)[:5]
     neutral_comments = feedbacks.filter(user_sentiment="neutral").values_list("comment", flat=True)[:5]
 
-    # Check if current user already voted
+
     has_voted = False
     if request.user.is_authenticated:
         has_voted = Feedback.objects.filter(bill=bill, user=request.user).exists()

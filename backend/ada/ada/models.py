@@ -20,18 +20,18 @@ class Feedback(models.Model):
         ("support", "Support"),
         ("oppose", "Oppose"),
         ("suggest", "Suggestion"),
-        ("neutral", "Neutral"),  # <- useful when AI detects no strong opinion
+        ("neutral", "Neutral"), 
     ]
 
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name="feedbacks")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="feedbacks")
     
-    # User’s selected sentiment (optional, can be blank if AI decides)
+ 
     user_sentiment = models.CharField(
         max_length=10, choices=SENTIMENT_CHOICES, blank=True, #null=True
     )
     
-    # AI-generated sentiment
+   
     ai_sentiment = models.CharField(
         max_length=10, choices=SENTIMENT_CHOICES, blank=True, null=True
     )
@@ -40,10 +40,10 @@ class Feedback(models.Model):
             models.UniqueConstraint(fields=['user', 'bill'], name='unique_feedback_user_bill')
         ]
 
-    # Confidence score from AI model (0–1)
+
     ai_confidence = models.FloatField(blank=True, null=True)
 
-    # Raw comment
+
     comment = models.TextField(blank=True)
 
     submitted_at = models.DateTimeField(auto_now_add=True)

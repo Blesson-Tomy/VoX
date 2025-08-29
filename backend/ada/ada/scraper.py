@@ -18,32 +18,32 @@ class BillScraper:
             print(f"Scraping URL: {self.url}")
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # Find all articles within views-row class
+            
             articles = soup.find_all('div', class_='views-row')
             bills_data = []
             
             print(f"Found {len(articles)} total articles")
             
             for article in articles:
-                # Find title and status within this specific article
+                
                 title = article.find('h3', class_='cate')
                 status = article.find('span', class_='status-pending')
                 
-                # Only proceed if title exists and status is specifically "pending"
+                
                 if title and status and status.text.strip() == 'In Committee':
                     title_text = title.text.strip()
                     
-                    # Find summary content within the article
+                    
                     summary_div = article.find('div', class_='field-content')
                     summary_text = summary_div.text.strip() if summary_div else "No summary available"
                     
-                    # Get article URL if available
+                    
                     article_link = title.find_parent('a')
                     article_url = f"https://prsindia.org{article_link['href']}" if article_link else None
                     
                     bill_data = {
                         'title': title_text,
-                        'summary': summary_text,  # Added summary
+                        'summary': summary_text, 
                         'status': 'pending',
                         'url': article_url,
                         'scraped_at': ''.join(re.findall(r'\d', title_text))
@@ -74,7 +74,7 @@ class BillScraper:
             
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # Try to find article content
+      
             content_div = soup.find('div', {'class': 'field-content'})
             
             if content_div:
